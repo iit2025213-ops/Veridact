@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+
+# Dependencies
+node_modules/
+.venv/
+
+# Production / build output
+dist/
+
+# Database files
+*.db
+
+# Uploads and User Data
+uploads/evidence/*
+!uploads/evidence/.gitkeep
+uploads/reports/*
+!uploads/reports/.gitkeep
