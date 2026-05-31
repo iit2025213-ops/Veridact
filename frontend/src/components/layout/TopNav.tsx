@@ -1,0 +1,134 @@
+// ============================================================
+// TopNav — Top navigation bar for authenticated pages
+// ============================================================
+import { useNavigate, useLocation } from 'react-router-dom'
+import { Bell, LogOut, User, ChevronDown } from 'lucide-react'
+import { useState } from 'react'
+import { cn } from '@/lib/utils'
+
+const ROUTE_LABELS: Record<string, string> = {
+  '/dashboard': 'Dashboard',
+  '/dashboard/cases': 'Cases',
+  '/dashboard/reports': 'Reports',
+  '/dashboard/analytics': 'Analytics',
+  '/admin': 'Admin Overview',
+  '/admin/users': 'User Management',
+  '/admin/custody': 'Custody Log',
+  '/admin/settings': 'Settings',
+}
+
+export default function TopNav() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  const currentUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('veridact_user') ?? '{}')
+    } catch { return {} }
+  })()
+
+  const pageTitle = (() => {
+    const exact = ROUTE_LABELS[location.pathname]
+    if (exact) return exact
+    if (location.pathname.includes('/evidence/')) return 'Evidence Analysis'
+    if (location.pathname.match(/\/cases\/[^/]+$/)) return 'Case Detail'
+    return 'VERIDACT'
+  })()
+
+  const handleLogout = () => {
+    localStorage.removeItem('veridact_token')
+    localStorage.removeItem('veridact_user')
+    navigate('/')
+  }
+
+  const roleLabel: Record<string, string> = {
+    super_admin: 'Super Admin',
+    supervisor: 'Supervisor',
+    investigator: 'Investigator',
+    citizen: 'Citizen',
+    api_partner: 'API Partner',
+  }
+
+  return (
+    <header className="h-14 bg-slate-950 border-b border-surface-border flex items-center justify-between px-6 shrink-0 relative z-30">
+      {/* Page title */}
+      <h1 className="text-body font-semibold text-text-primary">{pageTitle}</h1>
+
+      {/* Right side */}
+      <div className="flex items-center gap-3">
+        {/* Notifications bell (placeholder) */}
+        <button
+          id="topnav-notifications"
+          className="w-8 h-8 rounded-md flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors relative"
+          aria-label="Notifications"
+        >
+          <Bell className="w-4 h-4" />
+          {/* Notification dot */}
+          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-accent-primary" />
+        </button>
+
+        {/* User dropdown */}
+        <div className="relative">
+          <button
+            id="topnav-user-menu"
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-surface-elevated transition-colors"
+            aria-expanded={dropdownOpen}
+            aria-haspopup="true"
+          >
+            {/* Avatar */}
+            <div className="w-7 h-7 rounded-full bg-accent-subtle border border-accent-primary/30 flex items-center justify-center">
+              <span className="text-caption font-semibold text-accent-primary">
+                {currentUser.full_name?.[0] ?? 'U'}
+              </span>
+            </div>
+            <div className="hidden sm:block text-left">
+              <p className="text-body-sm font-medium text-text-primary leading-none">
+                {currentUser.full_name ?? 'User'}
+              </p>
+              <p className="text-caption text-text-muted leading-none mt-0.5">
+                {roleLabel[currentUser.role] ?? currentUser.role}
+              </p>
+            </div>
+            <ChevronDown className={cn('w-3 h-3 text-text-muted transition-transform', dropdownOpen && 'rotate-180')} />
+          </button>
+
+          {/* Dropdown menu */}
+          {dropdownOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setDropdownOpen(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 w-48 bg-surface-card border border-surface-border rounded-lg shadow-modal z-20 py-1 animate-fade-in">
+                <div className="px-4 py-2 border-b border-surface-border">
+                  <p className="text-body-sm font-medium text-text-primary truncate">
+                    {currentUser.full_name}
+                  </p>
+                  <p className="text-caption text-text-muted truncate">{currentUser.email}</p>
+                </div>
+                <button
+                  id="topnav-profile"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-body-sm text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
+                  onClick={() => setDropdownOpen(false)}
+                >
+                  <User className="w-3.5 h-3.5" />
+                  Profile
+                </button>
+                <button
+                  id="topnav-logout"
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-body-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Logout
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
+  )
+}

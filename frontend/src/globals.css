@@ -1,0 +1,385 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   VERIDACT — Global CSS
+   Theme: Modern AI SaaS Dark Slate + Emerald (Theme 5)
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* shadcn/ui CSS variable overrides — dark mode by default */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 161 94% 52%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 19% 27%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 161 94% 52%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 63% 70%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 19% 27%;
+    --input: 217 33% 17%;
+    --ring: 161 94% 52%;
+
+    --radius: 0.5rem;
+
+    --chart-1: 161 94% 52%;
+    --chart-2: 38 92% 50%;
+    --chart-3: 215 90% 70%;
+    --chart-4: 280 65% 70%;
+    --chart-5: 0 63% 70%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: #334155;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #0F172A;
+    color: #F1F5F9;
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #0F172A;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #334155;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #64748b;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: rgba(52, 211, 153, 0.2);
+    color: #F1F5F9;
+  }
+}
+
+/* ============================================================
+   TYPOGRAPHY UTILITIES
+   ============================================================ */
+@layer utilities {
+  .font-mono-data {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    letter-spacing: 0.02em;
+  }
+
+  .font-brand {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+  }
+
+  .text-gradient-emerald {
+    background: linear-gradient(135deg, #34D399, #10B981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-hero {
+    background: linear-gradient(135deg, #F1F5F9 0%, #94A3B8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Forensic grid background — SVG inline */
+  .bg-forensic {
+    background-color: #0F172A;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg stroke='%2334D399' stroke-width='0.3' opacity='0.12'%3E%3Crect width='40' height='40'/%3E%3Cpath d='M20 0v40M0 20h40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+/* ============================================================
+   REUSABLE COMPONENT CLASSES
+   ============================================================ */
+@layer components {
+  /* ── Cards ───────────────────────────────────────────────── */
+  .card-base {
+    background-color: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  .card-hover {
+    transition: all 200ms ease;
+  }
+  .card-hover:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+    border-color: #475569;
+  }
+
+  .card-accent {
+    border-left: 4px solid #34D399;
+    background-color: #064E3B;
+  }
+
+  /* ── Buttons ─────────────────────────────────────────────── */
+  .btn-base {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.5;
+    transition: all 150ms ease;
+    cursor: pointer;
+  }
+  .btn-base:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #34D399;
+  }
+  .btn-base:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.5;
+    transition: all 150ms ease;
+    cursor: pointer;
+    background-color: #34D399;
+    color: #0F172A;
+    border: none;
+  }
+  .btn-primary:hover {
+    background-color: #10B981;
+  }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.5;
+    transition: all 150ms ease;
+    cursor: pointer;
+    background-color: #1E293B;
+    color: #F1F5F9;
+    border: 1px solid #334155;
+  }
+  .btn-secondary:hover {
+    background-color: #253347;
+  }
+  .btn-secondary:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.5;
+    transition: all 150ms ease;
+    cursor: pointer;
+    background-color: transparent;
+    color: #CBD5E1;
+    border: none;
+  }
+  .btn-ghost:hover {
+    color: #F1F5F9;
+    background-color: #253347;
+  }
+  .btn-ghost:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.5;
+    transition: all 150ms ease;
+    cursor: pointer;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  .btn-danger:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+  }
+
+  /* ── Input ───────────────────────────────────────────────── */
+  .input-base {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid #334155;
+    background-color: #1E293B;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: #F1F5F9;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+    outline: none;
+  }
+  .input-base::placeholder {
+    color: #94A3B8;
+  }
+  .input-base:focus {
+    border-color: #34D399;
+    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2);
+  }
+
+  /* ── Badge ───────────────────────────────────────────────── */
+  .badge-base {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────────── */
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #94A3B8;
+    transition: all 150ms ease;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .sidebar-item:hover {
+    color: #F1F5F9;
+    background-color: #1E293B;
+  }
+
+  .sidebar-item-active {
+    background-color: #064E3B;
+    color: #34D399;
+    border-left: 2px solid #34D399;
+  }
+
+  /* ── Table ───────────────────────────────────────────────── */
+  .table-header {
+    background-color: #020617;
+    color: #94A3B8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .table-row {
+    background-color: #1E293B;
+    border-bottom: 1px solid #334155;
+    transition: background-color 100ms ease;
+    cursor: pointer;
+  }
+  .table-row:hover {
+    background-color: #253347;
+  }
+
+  /* ── Hash display ────────────────────────────────────────── */
+  .hash-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #94A3B8;
+    background-color: #020617;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    word-break: break-all;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Glow ────────────────────────────────────────────────── */
+  .glow-accent {
+    box-shadow: 0 0 20px rgba(52, 211, 153, 0.2), 0 0 40px rgba(52, 211, 153, 0.05);
+  }
+}
+
+/* ============================================================
+   PAGE TRANSITIONS
+   ============================================================ */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+
+.page-exit {
+  opacity: 1;
+}
+
+.page-exit-active {
+  opacity: 0;
+  transition: opacity 150ms ease-in;
+}
