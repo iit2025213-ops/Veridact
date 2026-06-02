@@ -1,0 +1,39 @@
+{
+  "users": [
+    {
+      "email": "admin@veridact.local",
+      "role": "super_admin",
+      "password": "demo1234"
+    },
+    {
+      "email": "supervisor@veridact.local",
+      "role": "supervisor",
+      "password": "demo1234"
+    },
+    {
+      "email": "inv1@veridact.local",
+      "role": "investigator",
+      "password": "demo1234"
+    },
+    {
+      "email": "inv2@veridact.local",
+      "role": "investigator",
+      "password": "demo1234"
+    },
+    {
+      "email": "citizen1@veridact.local",
+      "role": "citizen",
+      "password": "demo1234"
+    },
+    {
+      "email": "citizen2@veridact.local",
+      "role": "citizen",
+      "password": "demo1234"
+    }
+  ],
+  "cases": [],
+  "evidence": [],
+  "analysis_results": [],
+  "reports": [],
+  "custody_logs": []
+}

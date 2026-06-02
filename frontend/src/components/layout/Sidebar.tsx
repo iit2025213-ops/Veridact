@@ -33,16 +33,14 @@ interface SidebarProps {
   role?: UserRole
 }
 
+import { useAuth } from '@/hooks/useAuth'
+
 export default function Sidebar({ role }: SidebarProps) {
   const location = useLocation()
+  const { user } = useAuth()
 
-  // Read role from localStorage if not passed as prop
-  const currentRole: UserRole = role ?? (() => {
-    try {
-      const user = JSON.parse(localStorage.getItem('veridact_user') ?? '{}')
-      return user.role ?? 'investigator'
-    } catch { return 'investigator' }
-  })()
+  // Read role from user context, fallback to investigator
+  const currentRole: UserRole = role ?? user?.role ?? 'investigator'
 
   const filteredNav = NAV_ITEMS.filter(item => item.roles.includes(currentRole))
   const filteredAdmin = ADMIN_ITEMS.filter(item => item.roles.includes(currentRole))

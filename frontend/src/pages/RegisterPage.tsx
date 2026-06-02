@@ -4,40 +4,79 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Shield, User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { authService } from '@/services/authService'
+import { useAuth } from '@/hooks/useAuth'
+
+const registerSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirm_password: z.string(),
+}).refine(data => data.password === data.confirm_password, {
+  message: "Passwords don't match",
+  path: ['confirm_password'],
+})
+
+type RegisterFormData = z.infer<typeof registerSchema>
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const [formData, setFormData] = useState({
-    full_name: '', email: '', password: '', confirm_password: '',
-  })
+  const { login } = useAuth()
+  
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirm_password: '',
+    },
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    if (formData.password !== formData.confirm_password) {
-      setError('Passwords do not match')
-      return
-    }
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters')
-      return
-    }
+  const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true)
+    setError(null)
     try {
-      // TODO Phase 3: Replace with authService.register()
-      await new Promise(res => setTimeout(res, 1000))
-      setSuccess(true)
-      setTimeout(() => navigate('/login'), 2000)
-    } catch {
-      setError('Registration failed. Please try again.')
+      // 1. Register user
+      await authService.register({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      })
+      
+      // 2. Auto login
+      const loginSuccess = await login({
+        email: data.email,
+        password: data.password,
+      })
+
+      if (loginSuccess) {
+        setSuccess(true)
+        setTimeout(() => navigate('/dashboard'), 1500)
+      } else {
+        setError('Registration succeeded, but auto-login failed. Please sign in.')
+        setTimeout(() => navigate('/login'), 2000)
+      }
+    } catch (err: any) {
+      if (err.response?.data?.detail) {
+        setError(typeof err.response.data.detail === 'string' 
+          ? err.response.data.detail 
+          : 'Registration failed')
+      } else {
+        setError('Registration failed. Please try again.')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -60,43 +99,71 @@ export default function RegisterPage() {
             <div className="text-center py-6">
               <CheckCircle className="w-12 h-12 text-accent-primary mx-auto mb-3" />
               <p className="text-body font-semibold text-text-primary">Account Created!</p>
-              <p className="text-body-sm text-text-muted mt-1">Redirecting to login...</p>
+              <p className="text-body-sm text-text-muted mt-1">Redirecting to dashboard...</p>
             </div>
           ) : (
-            <form id="register-form" onSubmit={handleSubmit} className="space-y-4">
+            <form id="register-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label htmlFor="register-name" className="block text-body-sm font-medium text-text-secondary mb-1.5">Full Name</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                  <input id="register-name" name="full_name" type="text" value={formData.full_name} onChange={handleChange} className="input-base pl-10" placeholder="Your full name" required minLength={2} />
+                  <input 
+                    id="register-name" 
+                    type="text" 
+                    {...register('name')}
+                    className={`input-base pl-10 ${errors.name ? 'border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder="Your full name" 
+                  />
                 </div>
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
               </div>
 
               <div>
                 <label htmlFor="register-email" className="block text-body-sm font-medium text-text-secondary mb-1.5">Email address</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                  <input id="register-email" name="email" type="email" value={formData.email} onChange={handleChange} className="input-base pl-10" placeholder="you@example.com" required />
+                  <input 
+                    id="register-email" 
+                    type="email" 
+                    {...register('email')}
+                    className={`input-base pl-10 ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder="you@example.com" 
+                  />
                 </div>
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
               </div>
 
               <div>
                 <label htmlFor="register-password" className="block text-body-sm font-medium text-text-secondary mb-1.5">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                  <input id="register-password" name="password" type={showPassword ? 'text' : 'password'} value={formData.password} onChange={handleChange} className="input-base pl-10 pr-10" placeholder="Min. 8 characters" required minLength={8} />
+                  <input 
+                    id="register-password" 
+                    type={showPassword ? 'text' : 'password'} 
+                    {...register('password')}
+                    className={`input-base pl-10 pr-10 ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder="Min. 8 characters" 
+                  />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
               </div>
 
               <div>
                 <label htmlFor="register-confirm" className="block text-body-sm font-medium text-text-secondary mb-1.5">Confirm Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                  <input id="register-confirm" name="confirm_password" type="password" value={formData.confirm_password} onChange={handleChange} className="input-base pl-10" placeholder="Repeat your password" required />
+                  <input 
+                    id="register-confirm" 
+                    type="password" 
+                    {...register('confirm_password')}
+                    className={`input-base pl-10 ${errors.confirm_password ? 'border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder="Repeat your password" 
+                  />
                 </div>
+                {errors.confirm_password && <p className="text-red-500 text-xs mt-1">{errors.confirm_password.message}</p>}
               </div>
 
               {error && (

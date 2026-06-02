@@ -1,13 +1,12 @@
 // ============================================================
 // authService — Authentication API calls
-// TODO Phase 3: Wire to real backend
 // ============================================================
 import apiClient from './apiClient'
 import type { AuthTokens, LoginPayload, RegisterPayload, User } from '@/types'
 
 export const authService = {
-  async login(payload: LoginPayload): Promise<AuthTokens> {
-    const response = await apiClient.post<AuthTokens>('/auth/login', payload)
+  async login(payload: LoginPayload): Promise<AuthTokens & { user: User }> {
+    const response = await apiClient.post<AuthTokens & { user: User }>('/auth/login', payload)
     return response.data
   },
 
@@ -20,4 +19,9 @@ export const authService = {
     const response = await apiClient.get<User>('/auth/me')
     return response.data
   },
+
+  logout(): void {
+    localStorage.removeItem('veridact_token')
+    localStorage.removeItem('veridact_user')
+  }
 }

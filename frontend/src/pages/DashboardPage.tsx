@@ -70,7 +70,7 @@ export default function DashboardPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-h2 font-bold text-text-primary">
-            Welcome back, {user.full_name?.split(' ')[0] ?? 'Investigator'}
+            Welcome back, {user.name?.split(' ')[0] ?? 'Investigator'}
           </h1>
           <p className="text-body-sm text-text-muted mt-1">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}

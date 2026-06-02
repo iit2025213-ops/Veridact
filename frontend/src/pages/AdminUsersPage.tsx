@@ -7,10 +7,10 @@ import type { User } from '@/types'
 import type { UserRole } from '@/types/constants'
 
 const MOCK_USERS: User[] = [
-  { id: 'usr-001', email: 'admin@veridact.gov.np', full_name: 'System Administrator', role: 'super_admin', is_active: true, organization: 'Nepal Cyber Bureau', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 'usr-002', email: 'investigator@veridact.gov.np', full_name: 'Arjun Thapa', role: 'investigator', is_active: true, organization: 'Nepal Cyber Bureau', created_at: '2025-02-01T00:00:00Z', updated_at: '2025-02-01T00:00:00Z' },
-  { id: 'usr-003', email: 'supervisor@veridact.gov.np', full_name: 'Priya Sharma', role: 'supervisor', is_active: true, organization: 'Nepal Cyber Bureau', created_at: '2025-02-01T00:00:00Z', updated_at: '2025-02-01T00:00:00Z' },
-  { id: 'usr-004', email: 'investigator2@veridact.gov.np', full_name: 'Rajan Koirala', role: 'investigator', is_active: true, organization: 'Nepal Cyber Bureau', created_at: '2025-03-01T00:00:00Z', updated_at: '2025-03-01T00:00:00Z' },
+  { id: 'usr-001', email: 'admin@veridact.gov.np', name: 'System Administrator', role: 'super_admin', is_active: true, organization: 'Nepal Cyber Bureau', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
+  { id: 'usr-002', email: 'investigator@veridact.gov.np', name: 'Arjun Thapa', role: 'investigator', is_active: true, organization: 'Nepal Cyber Bureau', created_at: '2025-02-01T00:00:00Z', updated_at: '2025-02-01T00:00:00Z' },
+  { id: 'usr-003', email: 'supervisor@veridact.gov.np', name: 'Priya Sharma', role: 'supervisor', is_active: true, organization: 'Nepal Cyber Bureau', created_at: '2025-02-01T00:00:00Z', updated_at: '2025-02-01T00:00:00Z' },
+  { id: 'usr-004', email: 'investigator2@veridact.gov.np', name: 'Rajan Koirala', role: 'investigator', is_active: true, organization: 'Nepal Cyber Bureau', created_at: '2025-03-01T00:00:00Z', updated_at: '2025-03-01T00:00:00Z' },
 ]
 
 const ROLE_BADGE: Record<UserRole, string> = {
@@ -52,7 +52,7 @@ export default function AdminUsersPage() {
             {MOCK_USERS.map(user => (
               <tr key={user.id} className="table-row">
                 <td className="px-4 py-3">
-                  <p className="text-body-sm font-medium text-text-primary">{user.full_name}</p>
+                  <p className="text-body-sm font-medium text-text-primary">{user.name}</p>
                   <p className="text-caption text-text-muted">{user.email}</p>
                 </td>
                 <td className="px-4 py-3 hidden sm:table-cell">
@@ -90,7 +90,7 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setEditingUser(null)}>
           <div className="card-base p-6 w-full max-w-md shadow-modal" onClick={e => e.stopPropagation()}>
             <h2 className="text-h4 font-bold text-text-primary mb-4">Edit User</h2>
-            <p className="text-body-sm text-text-muted mb-4">Editing: {editingUser.full_name}</p>
+            <p className="text-body-sm text-text-muted mb-4">Editing: {editingUser.name}</p>
             <div className="space-y-3">
               <div>
                 <label className="block text-body-sm font-medium text-text-secondary mb-1">Role</label>

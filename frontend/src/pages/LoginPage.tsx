@@ -4,31 +4,59 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Shield, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { useAuth } from '@/hooks/useAuth'
+
+const loginSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(1, 'Password is required'),
+})
+
+type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { login, isLoading, error } = useAuth()
-
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/dashboard'
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const success = await login({ email, password })
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname
+
+  const onSubmit = async (data: LoginFormData) => {
+    const success = await login(data)
     if (success) {
-      navigate(from, { replace: true })
+      // Small hack: to get the role we either await a second or we can just read from localStorage 
+      // since login saves it. Alternatively, since login sets user in Context, we can let the ProtectedRoute handle redirect 
+      // or we can read it immediately from local storage.
+      const storedUser = localStorage.getItem('veridact_user')
+      let role = 'citizen'
+      if (storedUser) {
+        try { role = JSON.parse(storedUser).role } catch {}
+      }
+      const defaultDest = role === 'super_admin' ? '/admin' : '/dashboard'
+      navigate(from ?? defaultDest, { replace: true })
     }
   }
 
   const demoCredentials = [
-    { label: 'Admin', email: 'admin@veridact.gov.np', password: 'admin123' },
-    { label: 'Investigator', email: 'investigator@veridact.gov.np', password: 'pass1234' },
-    { label: 'Supervisor', email: 'supervisor@veridact.gov.np', password: 'pass1234' },
+    { label: 'Admin', email: 'admin@veridact.gov.np', password: 'demo1234' },
+    { label: 'Investigator', email: 'inv1@veridact.gov.np', password: 'demo1234' },
+    { label: 'Citizen', email: 'citizen1@veridact.gov.np', password: 'demo1234' },
   ]
 
   return (
@@ -46,7 +74,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form id="login-form" onSubmit={handleSubmit} className="space-y-5">
+          <form id="login-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Email */}
             <div>
               <label htmlFor="login-email" className="block text-body-sm font-medium text-text-secondary mb-1.5">
@@ -57,14 +85,13 @@ export default function LoginPage() {
                 <input
                   id="login-email"
                   type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="input-base pl-10"
+                  {...register('email')}
+                  className={`input-base pl-10 ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
                   placeholder="you@veridact.gov.np"
-                  required
                   autoComplete="email"
                 />
               </div>
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
             </div>
 
             {/* Password */}
@@ -77,11 +104,9 @@ export default function LoginPage() {
                 <input
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="input-base pl-10 pr-10"
+                  {...register('password')}
+                  className={`input-base pl-10 pr-10 ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
                   placeholder="••••••••"
-                  required
                   autoComplete="current-password"
                 />
                 <button
@@ -93,6 +118,7 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
             </div>
 
             {/* Error message */}
@@ -131,7 +157,7 @@ export default function LoginPage() {
                 <button
                   key={demo.label}
                   type="button"
-                  onClick={() => { setEmail(demo.email); setPassword(demo.password) }}
+                  onClick={() => { setValue('email', demo.email); setValue('password', demo.password) }}
                   className="w-full text-left flex items-center justify-between px-3 py-1.5 rounded-md hover:bg-surface-elevated transition-colors group"
                 >
                   <span className="text-body-sm font-medium text-text-secondary group-hover:text-text-primary">

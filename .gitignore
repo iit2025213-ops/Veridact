@@ -20,3 +20,5 @@ uploads/evidence/*
 !uploads/evidence/.gitkeep
 uploads/reports/*
 !uploads/reports/.gitkeep
+backend/veridact.db*
+.git.bak/

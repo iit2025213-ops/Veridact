@@ -38,9 +38,9 @@ export default function CaseDetailPage() {
   const [currentUser] = useState(() => {
     try {
       const stored = localStorage.getItem('veridact_user')
-      return stored ? JSON.parse(stored) : { role: 'supervisor', full_name: 'Priya Sharma' }
+      return stored ? JSON.parse(stored) : { role: 'supervisor', name: 'Priya Sharma' }
     } catch {
-      return { role: 'supervisor', full_name: 'Priya Sharma' }
+      return { role: 'supervisor', name: 'Priya Sharma' }
     }
   })
 
@@ -86,7 +86,7 @@ export default function CaseDetailPage() {
       {
         action: 'report_generated',
         time: new Date().toISOString(),
-        actor: currentUser.full_name,
+        actor: currentUser.name,
         detail: 'PDF Case report compiled and certified.'
       }
     ])
@@ -104,7 +104,7 @@ export default function CaseDetailPage() {
       {
         action: 'status_updated',
         time: new Date().toISOString(),
-        actor: currentUser.full_name,
+        actor: currentUser.name,
         detail: `Status changed to: ${newStatus.replace(/_/g, ' ')}`
       }
     ])
@@ -128,7 +128,7 @@ export default function CaseDetailPage() {
       {
         action: 'case_assigned',
         time: new Date().toISOString(),
-        actor: currentUser.full_name,
+        actor: currentUser.name,
         detail: `Case assigned to investigator: ${name}`
       }
     ])
@@ -145,7 +145,7 @@ export default function CaseDetailPage() {
       {
         action: 'priority_updated',
         time: new Date().toISOString(),
-        actor: currentUser.full_name,
+        actor: currentUser.name,
         detail: `Priority changed to: ${newPriority}`
       }
     ])
