@@ -63,6 +63,21 @@ def get_current_user(
     return user
 
 
+security_scheme_optional = HTTPBearer(auto_error=False)
+
+def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials = Depends(security_scheme_optional),
+    db: Session = Depends(get_db)
+) -> User | None:
+    """Returns the current user if a valid token is provided, otherwise None."""
+    if not credentials:
+        return None
+    try:
+        return get_current_user(credentials, db)
+    except HTTPException:
+        return None
+
+
 def require_roles(*roles: str) -> Callable:
     """Returns a FastAPI dependency that checks if the current user has required roles."""
     def role_checker(current_user: User = Depends(get_current_user)) -> User:

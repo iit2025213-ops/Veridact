@@ -1,19 +1,20 @@
 // ============================================================
 // TrackResultPage — Public case status display
+// Wired to real backend API in Phase 4 via publicService.trackCase().
 // ============================================================
 import { useParams, Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { Shield, Loader2, ArrowLeft, Clock, RefreshCw } from 'lucide-react'
-import { MOCK_CASES } from '@/lib/mockData'
-import type { CaseStatus } from '@/types/constants'
+import { Shield, Loader2, ArrowLeft, Clock, RefreshCw, AlertCircle } from 'lucide-react'
+import { trackCase } from '@/services/publicService'
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'Received — Under Review',
-  in_review: 'Under Active Investigation',
-  analysis_complete: 'Analysis Complete',
-  report_generated: 'Report Generated',
-  closed: 'Case Closed',
-  referred: 'Referred to Authority',
+interface PublicCase {
+  case_number: string
+  status: string
+  status_label: string
+  complaint_type: string
+  created_at: string
+  updated_at: string
+  public_notes: string[]
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -27,19 +28,26 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function TrackResultPage() {
   const { caseNumber } = useParams<{ caseNumber: string }>()
-  const [caseData, setCaseData] = useState<typeof MOCK_CASES[0] | null | undefined>(undefined)
+  const [caseData, setCaseData] = useState<PublicCase | null | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchCase = async () => {
       setIsLoading(true)
-      await new Promise(res => setTimeout(res, 800))
-      // TODO Phase 3: caseService.getPublicCaseStatus(caseNumber)
-      const found = MOCK_CASES.find(c => c.case_number === caseNumber)
-      setCaseData(found ?? null)
-      setIsLoading(false)
+      try {
+        const data = await trackCase(caseNumber ?? '')
+        setCaseData(data)
+      } catch (err: any) {
+        if (err?.response?.status === 404) {
+          setCaseData(null)
+        } else {
+          setCaseData(null) // treat any error as not found for now
+        }
+      } finally {
+        setIsLoading(false)
+      }
     }
-    fetchCase()
+    if (caseNumber) fetchCase()
   }, [caseNumber])
 
   return (
@@ -59,7 +67,11 @@ export default function TrackResultPage() {
         <div className="card-base p-10 text-center">
           <Shield className="w-10 h-10 text-text-disabled mx-auto mb-4" />
           <h2 className="text-h3 font-bold text-text-primary mb-2">Case Not Found</h2>
-          <p className="text-body text-text-muted">No case found with number <span className="font-mono-data text-accent-primary">{caseNumber}</span>. Please check your receipt.</p>
+          <p className="text-body text-text-muted">
+            No case found with number{' '}
+            <span className="font-mono-data text-accent-primary">{caseNumber}</span>.
+            Please check your submission receipt.
+          </p>
         </div>
       )}
 
@@ -72,34 +84,53 @@ export default function TrackResultPage() {
                 <p className="font-mono-data text-h3 font-bold text-accent-primary">{caseData.case_number}</p>
               </div>
               <span className={`badge-base border ${STATUS_COLORS[caseData.status] ?? ''}`}>
-                {STATUS_LABELS[caseData.status] ?? caseData.status}
+                {caseData.status_label ?? caseData.status}
               </span>
             </div>
 
             <div className="space-y-3">
               <div className="flex gap-4 py-3 border-b border-surface-border">
                 <span className="text-body-sm text-text-muted w-32 shrink-0">Complaint Type</span>
-                <span className="text-body-sm text-text-primary capitalize">{caseData.complaint_type.replace(/_/g, ' ')}</span>
+                <span className="text-body-sm text-text-primary capitalize">
+                  {caseData.complaint_type.replace(/_/g, ' ')}
+                </span>
               </div>
               <div className="flex gap-4 py-3 border-b border-surface-border">
                 <span className="text-body-sm text-text-muted w-32 shrink-0">Submitted</span>
                 <span className="text-body-sm text-text-primary flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-text-muted" />
-                  {new Date(caseData.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  {new Date(caseData.created_at).toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'long', year: 'numeric',
+                  })}
                 </span>
               </div>
               <div className="flex gap-4 py-3">
                 <span className="text-body-sm text-text-muted w-32 shrink-0">Last Updated</span>
                 <span className="text-body-sm text-text-primary flex items-center gap-1.5">
                   <RefreshCw className="w-3.5 h-3.5 text-text-muted" />
-                  {new Date(caseData.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  {new Date(caseData.updated_at).toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'long', year: 'numeric',
+                  })}
                 </span>
               </div>
             </div>
           </div>
 
+          {/* Public notes from investigators */}
+          {caseData.public_notes && caseData.public_notes.length > 0 && (
+            <div className="card-base p-5 space-y-3">
+              <p className="text-caption text-text-muted uppercase tracking-widest">Status Updates</p>
+              {caseData.public_notes.map((note, i) => (
+                <div key={i} className="flex items-start gap-2.5 p-3 rounded-lg bg-accent-subtle/50 border border-accent-primary/20">
+                  <AlertCircle className="w-4 h-4 text-accent-primary shrink-0 mt-0.5" />
+                  <p className="text-body-sm text-text-secondary">{note}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="card-base p-5">
-            <p className="text-caption text-text-muted uppercase tracking-widest mb-2">Public Status Note</p>
+            <p className="text-caption text-text-muted uppercase tracking-widest mb-2">Privacy Notice</p>
             <p className="text-body-sm text-text-secondary">
               Your complaint has been received and is being processed by the Nepal Cyber Bureau.
               Sensitive case details are not publicly disclosed to protect the integrity of the investigation.
@@ -107,7 +138,8 @@ export default function TrackResultPage() {
           </div>
 
           <p className="text-caption text-text-disabled text-center mt-4">
-            For urgent matters, contact the Nepal Cyber Bureau at <span className="text-text-muted">cyber@nepalpolice.gov.np</span>
+            For urgent matters, contact the Nepal Cyber Bureau at{' '}
+            <span className="text-text-muted">cyber@nepalpolice.gov.np</span>
           </p>
         </div>
       )}

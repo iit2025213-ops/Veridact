@@ -29,6 +29,12 @@ export const caseService = {
     return response.data
   },
 
+  /** Creates a case without authentication — for public citizen submissions on /submit */
+  async createCaseAnonymous(payload: CreateCasePayload): Promise<Case> {
+    const response = await apiClient.post<Case>('/cases/anonymous', payload)
+    return response.data
+  },
+
   async updateCase(caseId: string, payload: UpdateCasePayload): Promise<Case> {
     const response = await apiClient.patch<Case>(`/cases/${caseId}`, payload)
     return response.data

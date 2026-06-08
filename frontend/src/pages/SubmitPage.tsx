@@ -1,15 +1,18 @@
 // ============================================================
 // SubmitPage — Citizen Evidence Submission Wizard (4 steps)
+// Wired to real backend API in Phase 4.
 // ============================================================
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Image, Video, Mic, FileText, User, HelpCircle,
   Shield, CheckCircle, Upload, Loader2, Copy, Check,
-  ArrowRight, ArrowLeft
+  ArrowRight, ArrowLeft, AlertCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ComplaintType } from '@/types/constants'
+import { caseService } from '@/services/caseService'
+import { evidenceService } from '@/services/evidenceService'
 
 const COMPLAINT_OPTIONS: { type: ComplaintType; label: string; desc: string; icon: React.ComponentType<{className?: string}> }[] = [
   { type: 'deepfake_image', label: 'Deepfake Image', desc: 'AI-generated or manipulated photo', icon: Image },
@@ -40,6 +43,7 @@ export default function SubmitPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState<{ caseNumber: string; hash: string } | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [dragActive, setDragActive] = useState(false)
 
@@ -59,15 +63,36 @@ export default function SubmitPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
+    setSubmitError(null)
     try {
-      // TODO Phase 3: Replace with caseService.createCase() + evidenceService.uploadEvidence()
-      await new Promise(res => setTimeout(res, 2000))
-      setSubmitted({
-        caseNumber: `VRD-2025-${String(Math.floor(Math.random() * 99999)).padStart(6, '0')}`,
-        hash: Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join(''),
+      // Step 1: Create the case
+      const createdCase = await caseService.createCaseAnonymous({
+        title: formData.title,
+        description: formData.description,
+        complaint_type: formData.complaint_type as ComplaintType,
+        contact_email: formData.contact_email || undefined,
+        contact_phone: formData.contact_phone || undefined,
+        location: formData.location || undefined,
       })
-    } catch {
-      alert('Submission failed. Please try again.')
+
+      // Step 2: Upload the evidence file
+      let sha256Hash = ''
+      if (formData.file) {
+        const evidence = await evidenceService.uploadEvidence(createdCase.id, formData.file)
+        sha256Hash = evidence.sha256_hash
+      }
+
+      setSubmitted({
+        caseNumber: createdCase.case_number,
+        hash: sha256Hash,
+      })
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail
+      if (typeof detail === 'string') {
+        setSubmitError(detail)
+      } else {
+        setSubmitError('Submission failed. Please check your connection and try again.')
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -107,7 +132,7 @@ export default function SubmitPage() {
             <Link to={`/track/${submitted.caseNumber}`} id="confirmation-track" className="btn-primary">
               Track My Case <ArrowRight className="w-4 h-4" />
             </Link>
-            <button onClick={() => { setSubmitted(null); setStep(0); setFormData({ complaint_type: '', title: '', description: '', contact_email: '', contact_phone: '', location: '', file: null }) }} className="btn-secondary">
+            <button onClick={() => { setSubmitted(null); setStep(0); setSubmitError(null); setFormData({ complaint_type: '', title: '', description: '', contact_email: '', contact_phone: '', location: '', file: null }) }} className="btn-secondary">
               Submit Another
             </button>
           </div>
@@ -283,6 +308,12 @@ export default function SubmitPage() {
               By submitting, you confirm this evidence is genuine and consent to its forensic analysis.
               All submissions are governed by the Nepal Cyber Bureau Privacy Policy.
             </p>
+            {submitError && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <p className="text-body-sm text-red-400">{submitError}</p>
+              </div>
+            )}
             <div className="flex justify-between">
               <button onClick={handleBack} className="btn-ghost"><ArrowLeft className="w-4 h-4" /> Back</button>
               <button id="submit-complaint" onClick={handleSubmit} disabled={isSubmitting} className="btn-primary px-6">
